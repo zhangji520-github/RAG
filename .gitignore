@@ -38,3 +38,17 @@ Thumbs.db
 
 # Project specific - output files
 内容加载与切片/output/
+
+# Environment and utility files
+.env
+env_utils.py
+llm_utils.py
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code 配置（可选）
+.vscode/
