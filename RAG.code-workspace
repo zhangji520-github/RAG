@@ -1,0 +1,14 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "python.terminal.activateEnvironment": false,
+        "python.terminal.activateEnvInCurrentTerminal": false,
+        "python.defaultInterpreterPath": "E:\\Workspace\\Anaconda\\envs\\deep_learning\\python.exe",
+        "python.condaPath": "E:\\Workspace\\Anaconda\\Scripts\\conda.exe",
+        "terminal.integrated.shellIntegration.enabled": false
+    }
+}
