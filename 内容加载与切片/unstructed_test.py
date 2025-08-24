@@ -23,7 +23,7 @@ for doc in loader.lazy_load():
     docs.append(doc)
     json_file_name = str(doc.metadata.get("page_number")) + "_" + str(counter) + ".json"
     counter += 1
-    # write_json(doc.model_dump(), json_file_name)
+    write_json(doc.model_dump(), json_file_name)
 
 print(f"文档总页数: {len(docs)}")
 print(f"第一页元数据:")
