@@ -44,6 +44,9 @@ Thumbs.db
 env_utils.py
 llm_utils.py
 
+# VS Code workspace files
+*.code-workspace
+
 # Python 缓存
 __pycache__/
 *.pyc
