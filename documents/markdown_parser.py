@@ -1,5 +1,6 @@
 import sys
 import os
+
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -7,12 +8,27 @@ from langchain_community.document_loaders import UnstructuredMarkdownLoader
 from langchain_core.documents import Document
 from utils.log_utils import log
 from typing import List
-
+from llm_utils import openai_embedding
+from langchain_experimental.text_splitter import SemanticChunker
 
 class MarkdownParser:
     """
     Markdown解析器 处理解析与切片
     """
+    
+    def __init__(self):
+        self.text_splitter = SemanticChunker(
+            openai_embedding, breakpoint_threshold_type="percentile"
+        )
+        
+    def text_chunker(self, datas: List[Document]) -> List[Document]:
+        new_docs = []
+        for d in datas:
+            if len(d.page_content) > 5000:  # 内容超出了阈值，则按照语义再切割
+                new_docs.extend(self.text_splitter.split_documents([d]))
+                continue
+            new_docs.append(d)
+        return new_docs
 
     def parse_markdown_to_documents(self, md_file_path: str, encoding: str = "utf-8") -> list[Document]:
         """
@@ -27,7 +43,11 @@ class MarkdownParser:
         merged_documents = self.merge_title_content(documents)
         log.info(f"合并标题和内容后，得到 {len(merged_documents)} 个Document对象")
 
-        return merged_documents  # 添加返回语句
+        # 切分文本
+        chunk_documents = self.text_chunker(merged_documents)
+        log.info(f"文本切分后，得到 {len(chunk_documents)} 个Document对象")
+
+        return  chunk_documents  # 添加返回语句
 
     def parse_markdown(self, md_file_path: str, encoding: str = "utf-8") -> list[Document]:
         """
@@ -72,7 +92,7 @@ class MarkdownParser:
                 merged_data.append(document)
             # 条件2：标题文档
             if category == 'Title':    # 若是标题，用一个'Title'字段保存在document['metadata']中
-                document.metadata['title'] = document.page_content # Document里面就metadata跟page_content，我们直接在metadata中添加title字段 内容是副标题+
+                document.metadata['title'] = document.page_content # Document里面就metadata跟page_content，我们直接在metadata中添加title字段 内容
                 # 检查parent_id是否存在于parent_dict中，避免KeyError
                 if parent_id and parent_id in parent_dict:
                     document.page_content = parent_dict[parent_id].page_content + ' -> ' + document.page_content
@@ -100,11 +120,11 @@ class MarkdownParser:
         return self.logger
 
 if __name__ == "__main__":
-    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0lf3t9s7.md"
+    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0tfhhamx.md"
     parser = MarkdownParser()
     docs = parser.parse_markdown_to_documents(file_path)
 
-    counter = 0
+    counter = 1
     for item in docs:
         print(f'第 {counter} 页')
         print(f'元数据: {item.metadata}')
