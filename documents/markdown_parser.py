@@ -24,7 +24,7 @@ class MarkdownParser:
     def text_chunker(self, datas: List[Document]) -> List[Document]:
         new_docs = []
         for d in datas:
-            if len(d.page_content) > 500:  # 内容超出了阈值，则按照语义再切割
+            if len(d.page_content) > 5000:  # 内容超出了阈值，则按照语义再切割
                 new_docs.extend(self.text_splitter.split_documents([d]))
                 continue
             new_docs.append(d)
@@ -80,7 +80,7 @@ class MarkdownParser:
         parent_dict = {}  # parent_dict 是一个字典（dictionary），用于存储所有标题类型的文档（category 为 'Title' 的文档）。
         for document in datas:
             metadata = document.metadata
-            if 'languages' in metadata:          # 获取每个文档的元数据，并移除其中的 'languages' 字段（可能是因为这个信息不重要或会干扰处理
+            if 'languages' in metadata:          # 获取每个文档的元数据，并移除其中的 'languages' 字段 因为这个是列表类型，不支持milvus存储
                 metadata.pop('languages')
 
             # 从document中获取元数据信息 parent_id, category, element_id
@@ -120,7 +120,7 @@ class MarkdownParser:
         return self.logger
 
 if __name__ == "__main__":
-    file_path = r"datas/md/tech_report_0lf3t9s7.md"
+    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0ls2kg7u.md"
     parser = MarkdownParser()
     docs = parser.parse_markdown_to_documents(file_path)
 
