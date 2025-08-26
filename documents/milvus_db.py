@@ -58,7 +58,7 @@ class MilvusVectorSave:
         # 利用langchain提供的milvus 工具创建存储向量的collection
         # BM25BuiltInFunction() 是专门为 LangChain 的 Milvus.from_documents() 方法设计的
         self.vector_stored_saved = Milvus(
-            embedding_function=qwen_embeddings,
+            embedding_function=openai_embedding,
             collection_name=collection_name,
             connection_args={
                 "uri": uri,
@@ -84,7 +84,7 @@ class MilvusVectorSave:
         self.vector_stored_saved.add_documents(documents)
 
 if __name__ == "__main__":
-    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0ls2kg7u.md"
+    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0tfhhamx.md"
     parser = MarkdownParser()
     docs = parser.parse_markdown_to_documents(file_path)         # 读取多个文档
 
@@ -97,38 +97,38 @@ if __name__ == "__main__":
     # 从向量存储中获取client
     client = mv.vector_stored_saved.client
     # 从client获取表结构并打印看看
-    desc_collection = client.describe_collection(
-        collection_name=COLLECTION_NAME
-    )
-    print(f"集合结构: {desc_collection}")
-    print("-----" * 10)
-    # 从client得到当前collection的所有索引index
-    collection_Index = client.list_indexes(
-        collection_name=COLLECTION_NAME
-    )
-    print(f"当前集合的索引: {collection_Index}")
-    print("-----" * 10)
-    # 打印索引列表的描述
-    if collection_Index:
-        for index_name in collection_Index:
-            index_info = client.describe_index(
-                collection_name=COLLECTION_NAME,
-                index_name=index_name
-            )
-            print(f"索引 {index_name} 的描述: {index_info}")
-    print("-----" * 10)
-
-    # # 基于标量字段（如ID、字符串、数字）进行精确查询
-    # filter = "category == 'Title'"
-    # results = client.query(
-    #     collection_name=COLLECTION_NAME,
-    #     filter=filter,
-    #     output_fields=["text", "sparse", "category", "filename"],
-    #     limit=2  # 限制返回的结果数量
+    # desc_collection = client.describe_collection(
+    #     collection_name=COLLECTION_NAME
     # )
-    # print(f"基于标量字段的查询结果: {results}")
+    # print(f"集合结构: {desc_collection}")
     # print("-----" * 10)
-    # # 基于向量字段进行向量查询
+    # # 从client得到当前collection的所有索引index
+    # collection_Index = client.list_indexes(
+    #     collection_name=COLLECTION_NAME
+    # )
+    # print(f"当前集合的索引: {collection_Index}")
+    # print("-----" * 10)
+    # # 打印索引列表的描述
+    # if collection_Index:
+    #     for index_name in collection_Index:
+    #         index_info = client.describe_index(
+    #             collection_name=COLLECTION_NAME,
+    #             index_name=index_name
+    #         )
+    #         print(f"索引 {index_name} 的描述: {index_info}")
+    # print("-----" * 10)
+
+    # 基于标量字段（如ID、字符串、数字）进行精确查询
+    filter = "category == 'content'"
+    results = client.query(
+        collection_name=COLLECTION_NAME,
+        filter=filter,
+        output_fields=["text", "category", "filename"],
+        limit=1
+    )
+    print(f"基于标量字段的查询结果: {results}")
+    print("-----" * 10)
+    # 基于向量字段进行向量查询
     # query = "什么可以有效提高深宽比结构的刻蚀精度和一致性"
     # query_vector = qwen_embeddings.embed_query(query)
     # search_params = {
