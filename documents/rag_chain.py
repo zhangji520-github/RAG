@@ -13,7 +13,7 @@ from markdown_parser import MarkdownParser
 
 # Define the prompt template for generating AI responses
 PROMPT_TEMPLATE = """
-Human: You are an AI assistant, and provides answers to questions by using fact based and statistical information when possible.
+Human: You are an AI assistant, and you provide answers to questions by using fact based and statistical information when possible.
 Use the following pieces of information to provide a concise answer to the question enclosed in <question> tags.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 <context>
@@ -61,9 +61,10 @@ class RagChain:
         
         # 生成答案
         print("\n🤖 生成答案:")
-        res = rag_chain.invoke(question)
-        print(res)
-        return res
+        # res = rag_chain.invoke(question)
+        # print(res)
+        for chunk in rag_chain.stream(question):
+            print(chunk, end="", flush=True)
 
 if __name__ == "__main__":
     # 1. 加载文档数据
@@ -100,7 +101,7 @@ if __name__ == "__main__":
         print("-" * 30)
         
         try:
-            answer = rag.run_chain(retriever, question)
+            rag.run_chain(retriever, question)
         except Exception as e:
             print(f"错误: {e}")
         
