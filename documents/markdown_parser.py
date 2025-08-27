@@ -110,9 +110,9 @@ class MarkdownParser:
                     merged_data.append(document)
     
         # 将parent_dict中包含内容的文档添加到merged_data
+        # 将parent_dict中的所有文档添加到merged_data（包括纯标题）
         for doc in parent_dict.values():
-            if doc.metadata.get('category') == 'content':
-                merged_data.append(doc)
+            merged_data.append(doc)
         
         return merged_data
 
@@ -120,7 +120,7 @@ class MarkdownParser:
         return self.logger
 
 if __name__ == "__main__":
-    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0ls2kg7u.md"
+    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0ui655n3.md"
     parser = MarkdownParser()
     docs = parser.parse_markdown_to_documents(file_path)
 
@@ -131,7 +131,8 @@ if __name__ == "__main__":
         print("-----" * 10)
         print(f'标题: {item.metadata.get("title", "无标题")}')    # 正常标题
         print("-----" * 10)
+        print(f"category: {item.metadata.get("category", "无")}")  # category字段
         # 打印当前counter页的内容 这里我们把主标题和子标题都放在内容中
-        print(f'内容: {item.page_content}')
-        print("-----" * 10)
+        # print(f'内容: {item.page_content}')
+        # print("-----" * 10)
         counter += 1

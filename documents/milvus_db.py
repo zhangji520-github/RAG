@@ -84,7 +84,7 @@ class MilvusVectorSave:
         self.vector_stored_saved.add_documents(documents)
 
 if __name__ == "__main__":
-    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0tfhhamx.md"
+    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0x56f0pa.md"
     parser = MarkdownParser()
     docs = parser.parse_markdown_to_documents(file_path)         # 读取多个文档
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     # print("-----" * 10)
 
     # 基于标量字段（如ID、字符串、数字）进行精确查询
-    filter = "category == 'content'"
+    filter = "category == 'Title'"
     results = client.query(
         collection_name=COLLECTION_NAME,
         filter=filter,
@@ -129,18 +129,18 @@ if __name__ == "__main__":
     print(f"基于标量字段的查询结果: {results}")
     print("-----" * 10)
     # 基于向量字段进行向量查询
-    # query = "什么可以有效提高深宽比结构的刻蚀精度和一致性"
-    # query_vector = qwen_embeddings.embed_query(query)
-    # search_params = {
-    #     "params": {"nprobe": 10}
-    # }
-    # vector_results = client.search(
-    #     collection_name=COLLECTION_NAME,
-    #     data=[query_vector],  # 查询向量
-    #     search_params=search_params,
-    #     anns_field="dense",  # 向量字段名
-    #     limit=2,  # 返回top2
-    #     output_fields=["text", "category", "filename"]
-    # )
-    # print(f"基于向量字段的查询结果: {vector_results}")
-    # print("-----" * 10)
+    query = "机器学习的概念"
+    query_vector = qwen_embeddings.embed_query(query)
+    search_params = {
+        "params": {"nprobe": 10}
+    }
+    vector_results = client.search(
+        collection_name=COLLECTION_NAME,
+        data=[query_vector],  # 查询向量
+        search_params=search_params,
+        anns_field="dense",  # 向量字段名
+        limit=2,  # 返回top2
+        output_fields=["text", "category", "filename"]
+    )
+    print(f"基于向量字段的查询结果: {vector_results}")
+    print("-----" * 10)
