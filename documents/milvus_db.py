@@ -84,7 +84,7 @@ class MilvusVectorSave:
         self.vector_stored_saved.add_documents(documents)
 
 if __name__ == "__main__":
-    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_0x56f0pa.md"
+    file_path = r"E:\Workspace\ai\RAG\datas\md\tech_report_z7tx05vt.md"
     parser = MarkdownParser()
     docs = parser.parse_markdown_to_documents(file_path)         # 读取多个文档
 
@@ -119,28 +119,34 @@ if __name__ == "__main__":
     # print("-----" * 10)
 
     # 基于标量字段（如ID、字符串、数字）进行精确查询
-    filter = "category == 'Title'"
-    results = client.query(
-        collection_name=COLLECTION_NAME,
-        filter=filter,
-        output_fields=["text", "category", "filename"],
-        limit=1
-    )
-    print(f"基于标量字段的查询结果: {results}")
-    print("-----" * 10)
+    # filter = "category == 'Title'"
+    # results = client.query(
+    #     collection_name=COLLECTION_NAME,
+    #     filter=filter,
+    #     output_fields=["text", "category", "filename"],
+    #     limit=1
+    # )
+    # print(f"基于标量字段的查询结果: {results}")
+    # print("-----" * 10)
     # 基于向量字段进行向量查询
-    query = "机器学习的概念"
+    query = "干法刻蚀"
     query_vector = qwen_embeddings.embed_query(query)
     search_params = {
         "params": {"nprobe": 10}
     }
-    vector_results = client.search(
-        collection_name=COLLECTION_NAME,
-        data=[query_vector],  # 查询向量
-        search_params=search_params,
-        anns_field="dense",  # 向量字段名
-        limit=2,  # 返回top2
-        output_fields=["text", "category", "filename"]
-    )
-    print(f"基于向量字段的查询结果: {vector_results}")
-    print("-----" * 10)
+    # vector_results = client.search(
+    #     collection_name=COLLECTION_NAME,
+    #     data=[query_vector],  # 查询向量
+    #     search_params=search_params,
+    #     anns_field="dense",  # 向量字段名
+    #     limit=1,  # 返回top2
+    #     output_fields=["text", "category", "filename"],
+    #     consistency_level="Strong"
+    # )
+    # vector_results = mv.vector_stored_saved.similarity_search(
+    #     query=query,
+    #     k=1,
+    # )
+    # print(f"基于向量字段的查询结果: {vector_results}")
+    # print("-----" * 10)
+    
