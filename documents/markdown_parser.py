@@ -34,7 +34,7 @@ class MarkdownParser:
         """
         解析Markdown文件为Document对象列表
         :param md_file_path: Markdown文件路径
-        :param encoding: 文件编码，默认utf-8
+        :param encoding: 文件编码 默认utf-8
         :return: Document对象列表
         """
         documents = self.parse_markdown(md_file_path, encoding)
@@ -102,8 +102,8 @@ class MarkdownParser:
             if category != 'Title' and parent_id:
                 # 检查parent_id是否存在于parent_dict中，避免KeyError
                 if parent_id in parent_dict:
-                    parent_dict[parent_id].page_content = parent_dict[parent_id].page_content + ' ' + document.page_content
-                    parent_dict[parent_id].metadata['category'] = 'content'
+                    parent_dict[parent_id].page_content = parent_dict[parent_id].page_content + '->' + document.page_content
+                    parent_dict[parent_id].metadata['category'] = 'TitleWithContent' # 标题文档被附加了子内容（如 NarrativeText、ListItem 等），表示这是一个“带内容的标题”
                 else:
                     # 如果找不到父文档，将当前文档作为独立文档添加到结果中
                     log.warning(f"找不到parent_id为 {parent_id} 的父文档，将当前文档作为独立文档处理")
@@ -127,12 +127,12 @@ if __name__ == "__main__":
     counter = 1
     for item in docs:
         print(f'第 {counter} 页')
-        print(f'元数据: {item.metadata}')
-        print("-----" * 10)
+        # print(f'元数据: {item.metadata}')
+        # print("-----" * 10)
         print(f'标题: {item.metadata.get("title", "无标题")}')    # 正常标题
         print("-----" * 10)
         print(f"category: {item.metadata.get("category", "无")}")  # category字段
         # 打印当前counter页的内容 这里我们把主标题和子标题都放在内容中
-        # print(f'内容: {item.page_content}')
-        # print("-----" * 10)
+        print(f'内容: {item.page_content}')
+        print("-----" * 10)
         counter += 1

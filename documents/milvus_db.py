@@ -96,13 +96,15 @@ if __name__ == "__main__":
 
     # 从向量存储中获取client
     client = mv.vector_stored_saved.client
+    client.flush(collection_name=COLLECTION_NAME)
+
     # 从client获取表结构并打印看看
     # desc_collection = client.describe_collection(
     #     collection_name=COLLECTION_NAME
     # )
     # print(f"集合结构: {desc_collection}")
     # print("-----" * 10)
-    # # 从client得到当前collection的所有索引index
+    # 从client得到当前collection的所有索引index
     # collection_Index = client.list_indexes(
     #     collection_name=COLLECTION_NAME
     # )
@@ -119,7 +121,7 @@ if __name__ == "__main__":
     # print("-----" * 10)
 
     # 基于标量字段（如ID、字符串、数字）进行精确查询
-    # filter = "category == 'Title'"
+    # filter = "category == 'content'"
     # results = client.query(
     #     collection_name=COLLECTION_NAME,
     #     filter=filter,
@@ -134,19 +136,19 @@ if __name__ == "__main__":
     search_params = {
         "params": {"nprobe": 10}
     }
-    # vector_results = client.search(
-    #     collection_name=COLLECTION_NAME,
-    #     data=[query_vector],  # 查询向量
-    #     search_params=search_params,
-    #     anns_field="dense",  # 向量字段名
-    #     limit=1,  # 返回top2
-    #     output_fields=["text", "category", "filename"],
-    #     consistency_level="Strong"
-    # )
-    # vector_results = mv.vector_stored_saved.similarity_search(
-    #     query=query,
-    #     k=1,
-    # )
-    # print(f"基于向量字段的查询结果: {vector_results}")
-    # print("-----" * 10)
+    vector_results = client.search(
+        collection_name=COLLECTION_NAME,
+        data=[query_vector],  # 查询向量
+        search_params=search_params,
+        anns_field="dense",  # 向量字段名
+        limit=1,  # 返回top2
+        output_fields=["text", "category", "filename"],
+        consistency_level="Strong"
+    )
+    vector_results = mv.vector_stored_saved.similarity_search(
+        query=query,
+        k=1,
+    )
+    print(f"基于向量字段的查询结果: {vector_results}")
+    print("-----" * 10)
     
