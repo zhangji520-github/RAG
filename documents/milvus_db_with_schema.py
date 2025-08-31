@@ -94,7 +94,6 @@ class MilvusVectorSave:
     def create_connection(self,collection_name: str = COLLECTION_NAME, uri: str = MILVUS_URI):
         """创建一个connection milvus + langchain"""
         # 利用 langchain 提供的 milvus 工具连接到已存在的collection
-        # 注意：LangChain可能只会使用基本字段，额外字段可能不会在Attu中显示为"活跃"状态
         self.vector_stored_saved = Milvus(
             embedding_function=openai_embedding,
             collection_name=collection_name,
