@@ -9,7 +9,7 @@ from langchain_core.documents import Document
 from env_utils import MILVUS_URI, COLLECTION_NAME
 from langchain_milvus import Milvus, BM25BuiltInFunction
 from typing import List, Optional
-from markdown_parser import MarkdownParser
+from .markdown_parser import MarkdownParser
 
 
 class MilvusVectorSave:
@@ -43,7 +43,7 @@ class MilvusVectorSave:
             }
         ]
 
-    def create_collection(self,collection_name: str = COLLECTION_NAME, uri: str = MILVUS_URI, is_first: bool = False):
+    def create_connection(self,collection_name: str = COLLECTION_NAME, uri: str = MILVUS_URI, is_first: bool = False):
         """创建一个collection milvus + langchain"""
         # 检查集合是否已存在，如果存在先释放collection，然后再删除索引和集合  
 
@@ -55,7 +55,7 @@ class MilvusVectorSave:
                 client.drop_index(collection_name=COLLECTION_NAME, index_name="dense_vector_index")
                 client.drop_collection(collection_name=COLLECTION_NAME)
 
-        # 利用langchain提供的milvus 工具创建存储向量的collection
+        # 利用 langchain 提供的 milvus 工具创建存储向量的collection
         # BM25BuiltInFunction() 是专门为 LangChain 的 Milvus.from_documents() 方法设计的
         self.vector_stored_saved = Milvus(
             embedding_function=openai_embedding,
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     mv = MilvusVectorSave()
     # 首先如果是第一次创建集合，就传 True
-    mv.create_collection(is_first=True)
+    mv.create_connection(is_first=True)
 
     mv.add_documents(docs)  # 添加新的 document 数据
 

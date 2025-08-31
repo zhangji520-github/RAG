@@ -9,9 +9,10 @@ from multiprocessing import Process, Queue
 import time, os
 from utils.log_utils import log
 from markdown_parser import MarkdownParser
+from milvus_db import MilvusVectorSave
 # 采用多进程 分布式 的方式把海量的数据写入 Milvus 数据库 建立一个共享的队列(内部维护着数据的共享)，多个进程可以向队列里存/取数据
 
-def file_parser_process(dir_path: str, output_queue: Queue, batch_size: int = 10):
+def file_parser_process(dir_path: str, output_queue: Queue, batch_size: int = 20):
     """进程1: 解析目录下所有的md文件并分批放入到队列中"""
     log.info(f"文件解析进程启动，解析目录: {dir_path}")
 
@@ -50,4 +51,55 @@ def file_parser_process(dir_path: str, output_queue: Queue, batch_size: int = 10
     if doc_batch:
         output_queue.put(doc_batch)
         log.info(f'解析完成，共处理 {len(md_files)} 个文件')
+
+
+def milvus_write_process(input_queue: Queue):
+    """进程2: 从队列中获取数据并写入到 Milvus 数据库"""
+    log.info("Milvus 写入进程启动")
+    # 步骤1: 初始化 Milvus 连接
+    mv = MilvusVectorSave()
+    mv.create_connection(is_first=True)
+    log.info("Milvus 数据库连接已建立，集合已创建")
+    total_docs = 0  # 统计总共写入的文档数量
+
+    # 步骤2: 不断从队列中获取数据并写入 Milvus
+    while True:
+        datas = input_queue.get()  # 从队列中获取数据 注意get是阻塞函数 (如果队列为空则等待)
+        if datas is None:  # 如果收到结束信号则退出循环
+            log.info("收到结束信号,Milvus 写入进程即将退出")
+            break
         
+        if isinstance(datas, list) and datas:
+            try:
+                mv.add_documents(datas)
+                total_docs += len(datas)
+                log.info(f"已写入 {len(datas)} 个 Document 对象到 Milvus, 当前总计写入 {total_docs} 个")
+            except Exception as e:
+                log.exception(f"写入 Milvus 时出错, 当前批次大小={len(datas)}", exc_info=e)
+
+
+if __name__ == '__main__':
+    start_time = time.time()
+    md_dir = r"E:\Workspace\ai\RAG\datas\md"         # 当然如果需要转化pdf 可以写一个 pdf_parser.py
+    queue_maxsize = 20   # 队列最大长度，防止内存占用过高
+
+    # 创建进程间通信的队列
+    docs_queue = Queue(maxsize=queue_maxsize)
+
+    # 进程1： 创建并启动文件解析进程
+    parser_process = Process(target=file_parser_process, args=(md_dir, docs_queue, 20))
+
+    # 进程2： 创建并启动 Milvus 写入进程
+    write_process = Process(target=milvus_write_process, args=(docs_queue,))
+
+    parser_process.start()
+    write_process.start()
+        
+    # 等待解析进程结束
+    parser_process.join()
+    log.info("文件解析进程已结束")
+    write_process.join()
+    log.info("Milvus 写入进程已结束")
+
+    end_time = time.time()
+    log.info(f"所有进程已结束, 总耗时: {end_time - start_time:.2f} 秒")

@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     # 2. 创建 Milvus 向量数据库并添加文档 
     mv = MilvusVectorSave()
-    mv.create_collection(is_first=True)
+    mv.create_connection(is_first=True)
     mv.add_documents(docs)
     print("文档已添加到向量数据库")
 
