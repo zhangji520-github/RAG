@@ -9,7 +9,7 @@ from multiprocessing import Process, Queue
 import time, os
 from utils.log_utils import log
 from markdown_parser import MarkdownParser
-from milvus_db import MilvusVectorSave
+from milvus_db_with_schema import MilvusVectorSave
 # 采用多进程 分布式 的方式把海量的数据写入 Milvus 数据库 建立一个共享的队列(内部维护着数据的共享)，多个进程可以向队列里存/取数据
 
 def file_parser_process(dir_path: str, output_queue: Queue, batch_size: int = 20):
@@ -58,8 +58,8 @@ def milvus_write_process(input_queue: Queue):
     log.info("Milvus 写入进程启动")
     # 步骤1: 初始化 Milvus 连接
     mv = MilvusVectorSave()
-    mv.create_connection(is_first=True)
-    log.info("Milvus 数据库连接已建立，集合已创建")
+    mv.create_connection()
+    log.info("Milvus 向量数据库vector_store已连接成功")
     total_docs = 0  # 统计总共写入的文档数量
 
     # 步骤2: 不断从队列中获取数据并写入 Milvus
@@ -82,6 +82,10 @@ if __name__ == '__main__':
     start_time = time.time()
     md_dir = r"E:\Workspace\ai\RAG\datas\md"         # 当然如果需要转化pdf 可以写一个 pdf_parser.py
     queue_maxsize = 20   # 队列最大长度，防止内存占用过高
+
+
+    mv = MilvusVectorSave()
+    mv.create_collection(is_first=True)  # 建表
 
     # 创建进程间通信的队列
     docs_queue = Queue(maxsize=queue_maxsize)
