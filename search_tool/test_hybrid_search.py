@@ -167,6 +167,7 @@ if __name__ == "__main__":
         reqs=reqs,
         ranker=ranker,
         limit=2,
+        output_fields=["text","id"]
     )
 
     for hits in res:

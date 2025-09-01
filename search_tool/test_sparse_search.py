@@ -4,12 +4,14 @@ import os
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from langchain_milvus import BM25BuiltInFunction, Milvus
-from pymilvus import MilvusClient, DataType
-from env_utils import MILVUS_URI
+from pymilvus import MilvusClient, DataType, AnnSearchRequest
 from pymilvus import Function, FunctionType
 from llm_utils import openai_embedding
 from langchain_core.documents import Document
 from documents.markdown_parser import MarkdownParser
+from llm_utils import openai_embedding
+from pymilvus import RRFRanker
+from env_utils import COLLECTION_NAME, MILVUS_URI
 """
 测试 Milvus 全文检索
 """
@@ -89,19 +91,63 @@ def insert_data():
 
     return vector_store
 
-if __name__ == "__main__":
-    sparse_search()
-    insert_data()
+def my_hybird_search():
+    query = "湿法刻蚀的优势"
 
-    vector_store = insert_data()
-    print("\n使用过滤条件进行搜索:")
-    result = vector_store.similarity_search_with_score(
-        query = "湿法刻蚀的优势", 
-        k=2,
-        expr='category == "TitleWithContent"',
-        consistency_level="Eventually",  
-        )
-    for doc, score in result:
-        print(f"内容: {doc.page_content}")
-        print(f"相似度得分: {score}")
-        print("-" * 30)
+    # 1. text semantic search (dense)
+    search_params_dense = {
+        "data": [openai_embedding.embed_query(query)],
+        "anns_field": "dense",
+        "param": {"nprobe": 10},
+        "limit": 10,
+        'expr':'category == "TitleWithContent" && category_depth > 1'
+    }
+    request_dense = AnnSearchRequest(**search_params_dense)
+    # 2. full-text search (sparse)
+    search_params_sparse = {
+        "data": [query],
+        "anns_field": "sparse",
+        "limit": 10,
+        "param": {"drop_ratio_search": 0.2},
+        'expr':'category == "TitleWithContent" && category_depth > 1'
+    }
+    request_sparse = AnnSearchRequest(**search_params_sparse)
+
+    reqs = [request_dense, request_sparse]
+
+    ranker = RRFRanker(100)
+    return reqs, ranker
+
+
+
+if __name__ == "__main__":
+    # sparse_search()
+    # insert_data()
+
+    # vector_store = insert_data()
+    # print("\n使用过滤条件进行搜索:")
+    # result = vector_store.similarity_search_with_score(
+    #     query = "湿法刻蚀的优势", 
+    #     k=2,
+    #     expr='category == "TitleWithContent"',
+    #     consistency_level="Eventually",  
+    #     )
+    # for doc, score in result:
+    #     print(f"内容: {doc.page_content}")
+    #     print(f"相似度得分: {score}")
+    #     print("-" * 30)
+
+    reqs, ranker = my_hybird_search()
+    client = MilvusClient(uri=MILVUS_URI)
+    res = client.hybrid_search(
+        collection_name=COLLECTION_NAME,
+        reqs=reqs,
+        ranker=ranker,
+        limit=5,
+        output_fields=["text", "category", "category_depth"],
+    )
+    for hits in res:
+        print(f"总共找到 {len(hits)} 个结果")
+        for hit in hits:
+            print(hit)
+            print("-----" * 10)
